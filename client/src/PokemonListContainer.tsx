@@ -1,4 +1,6 @@
 import React from "react";
+import { PokemonInfoCard } from "./PokemonInfoCard";
+import { pokemonData } from "./data/pokemon";
 
 type Props = {};
 
@@ -19,6 +21,9 @@ export const PokemonListContainer = (props: Props) => {
           placeholder="Enter name or PokeDex Number..."
         />
       </div>
+
+      <PokemonInfoCard {...pokemonData[0]}
+      />
 
       <p>You have caught <strong>X</strong> out of <strong>X</strong>, or <strong>~X%</strong></p>
     </div>
