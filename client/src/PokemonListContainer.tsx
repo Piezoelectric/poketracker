@@ -102,7 +102,7 @@ export const PokemonListContainer = (props: Props) => {
         }} />
       </div>
 
-      <p>You have caught <strong>{numCaught}</strong> out of <strong>{numTotal}</strong>, or <strong>~{percentCaught}%</strong></p>
+      <p>You have caught <strong>{numCaught}</strong> out of <strong>{numTotal}</strong>, or <strong>~{percentCaught || 0}%</strong></p>
 
       {filteredPokemonData.map((pkmnData: PokemonDataProps) =>
         <PokemonInfoCard key={pkmnData.dex_number}
