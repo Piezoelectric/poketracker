@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "engines": {
-    "npm": "8.11.0",
-    "node": "16.16.0"
+    "npm": ">=8.11.0",
+    "node": ">=16.16.0"
   },
   "scripts": {
     "start:client": "cd client && npm run dev",
@@ -15,5 +15,9 @@
     "start:studio": "cd server && npm run start:studio",
     "migrate-db": "cd server && npm run migrate-db",
     "seed-db": "cd server && npm run seed-db"
+  },
+  "dependencies": {
+    "@headlessui/react": "^1.7.13",
+    "@heroicons/react": "^2.0.16"
   }
 }

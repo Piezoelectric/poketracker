@@ -74,28 +74,30 @@ export const PokemonListContainer = (props: Props) => {
   return (
     <div>
       <div className="mb-4">
-        <label
-          className="block text-gray-700 text-sm font-bold mb-2"
-          htmlFor="pokemon-list-filter"
-        >
-          Filter By Name or PokeDex Number
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="pokemon-list-filter"
-          type="text"
-          placeholder="Enter name or PokeDex Number..."
-          onChange={event => setFilterByTextInput(event.target.value)}
-        />
+        <div className="w-7/12 inline-block pr-6">
+          <label
+            className="text-gray-700 text-sm font-bold mb-2"
+            htmlFor="pokemon-list-filter"
+          >
+            Filter By Name or PokeDex Number
+          </label>
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="pokemon-list-filter"
+            type="text"
+            placeholder="Enter name or PokeDex Number..."
+            onChange={event => setFilterByTextInput(event.target.value)}
+          />
+        </div>
 
         <PokemonTypeDropdown {...{
-          className: 'type1',
+          idName: 'type1',
           labelName: "Type 1",
           selectedType: filterByType1,
           setSelectedType: setFilterByType1
         }} />
         <PokemonTypeDropdown {...{
-          className: 'type2',
+          idName: 'type2',
           labelName: "Type 2",
           selectedType: filterByType2,
           setSelectedType: setFilterByType2

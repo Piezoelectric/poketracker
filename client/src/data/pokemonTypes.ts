@@ -1,11 +1,6 @@
 export type PokemonTypeDisplay = {
   type: string, // lowercase 
   displayName: string, // first letter capitalized
-  // marginLeft, marginTop for offsetting type-icons.png
-  // type-icons dimensions: 200 x 200,
-  // 7px margin at top and bottom,
-  // 9px margin at left and right,
-  // type icons are 53 long 20 tall
 }
 
 export const pokemonTypesForDisplay = [{
