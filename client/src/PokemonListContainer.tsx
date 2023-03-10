@@ -107,6 +107,7 @@ export const PokemonListContainer = (props: Props) => {
       {filteredPokemonData.map((pkmnData: PokemonDataProps) =>
         <PokemonInfoCard key={pkmnData.dex_number}
           {...pkmnData}
+          toggleCaught={togglePokemonCaughtState}
         />
       )}
 
