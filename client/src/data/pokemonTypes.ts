@@ -1,4 +1,4 @@
-export type PokemonDisplayType = {
+export type PokemonTypeDisplay = {
   type: string, // lowercase 
   displayName: string, // first letter capitalized
   // marginLeft, marginTop for offsetting type-icons.png

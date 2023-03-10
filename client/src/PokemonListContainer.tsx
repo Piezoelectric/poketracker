@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { PokemonInfoCard } from "./PokemonInfoCard";
-import { pokemonData } from "./data/pokemon";
+import { PokemonData, pokemonData } from "./data/pokemon";
 import { PokemonTypeDropdown } from "./PokemonTypeDropdown";
 
 type Props = {};
+
+export type PokemonDataProps = PokemonData & {
+  caught: boolean,
+  toggleCaught: (arg0: number) => void,
+}
 
 const doesPokemonFitFilters = (
   pkmn: any,
@@ -59,10 +64,10 @@ export const PokemonListContainer = (props: Props) => {
     displayName: 'Any'
   })
 
-  const filteredPokemonData = pokemonDataState.filter(pkmn =>
+  const filteredPokemonData = pokemonDataState.filter((pkmn: PokemonDataProps) =>
     doesPokemonFitFilters(pkmn, filterByTextInput, filterByType1.type, filterByType2.type))
 
-  const numCaught = filteredPokemonData.filter(pkmn => pkmn.caught).length
+  const numCaught = filteredPokemonData.filter((pkmn: PokemonDataProps) => pkmn.caught).length
   const numTotal = filteredPokemonData.length
   const percentCaught = Math.round(numCaught / numTotal * 100)
 
@@ -99,9 +104,8 @@ export const PokemonListContainer = (props: Props) => {
 
       <p>You have caught <strong>{numCaught}</strong> out of <strong>{numTotal}</strong>, or <strong>~{percentCaught}%</strong></p>
 
-      {filteredPokemonData.map(pkmnData =>
+      {filteredPokemonData.map((pkmnData: PokemonDataProps) =>
         <PokemonInfoCard key={pkmnData.dex_number}
-          toggleCaught={togglePokemonCaughtState}
           {...pkmnData}
         />
       )}

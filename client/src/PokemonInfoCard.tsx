@@ -1,16 +1,7 @@
 import React from "react";
+import { PokemonDataProps } from "./PokemonListContainer";
 
-type Props = {
-  name: string,
-  dex_number: number,
-  type_1: string, // may be better to define this as enum, but later.
-  type_2?: string | null,
-  image_url: string,
-  caught: boolean,
-  toggleCaught: any, // TODO: fix type
-};
-
-export const PokemonInfoCard = (props: Props) => {
+export const PokemonInfoCard = (props: PokemonDataProps) => {
   const { name, dex_number, type_1, type_2, image_url, caught, toggleCaught } = props;
   return (
     <div>

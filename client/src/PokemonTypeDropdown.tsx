@@ -1,11 +1,11 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
-import { pokemonTypesForDisplay, PokemonDisplayType } from "./data/pokemonTypes";
+import { pokemonTypesForDisplay, PokemonTypeDisplay } from "./data/pokemonTypes";
 
 type Props = {
   className: "type1" | "type2",
   labelName: "Type 1" | "Type 2",
-  selectedType: PokemonDisplayType,
-  setSelectedType: Dispatch<SetStateAction<PokemonDisplayType>>,
+  selectedType: PokemonTypeDisplay,
+  setSelectedType: Dispatch<SetStateAction<PokemonTypeDisplay>>,
 };
 
 export const PokemonTypeDropdown = (props: Props) => {

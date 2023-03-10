@@ -1,3 +1,11 @@
+export type PokemonData = {
+  name: string,
+  dex_number: number,
+  type_1: string,
+  type_2?: string | null,
+  image_url: string,
+}
+
 export const pokemonData = [
   {
     name: "sprigatito",
