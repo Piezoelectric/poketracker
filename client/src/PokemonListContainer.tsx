@@ -1,8 +1,25 @@
 import React, { useState } from "react";
 import { PokemonInfoCard } from "./PokemonInfoCard";
 import { pokemonData } from "./data/pokemon";
+import { PokemonTypeDropdown } from "./PokemonTypeDropdown";
 
 type Props = {};
+
+const doesPokemonFitFilters = (
+  pkmn: any,
+  filterByTextInput: string,
+  filterByType1: string,
+  filterByType2: string) => {
+
+  const nameIncludes = pkmn.name.includes(filterByTextInput)
+  const dexNumIncludes = pkmn.dex_number.toString().includes(filterByTextInput)
+  const type1Match =
+    filterByType1.length > 0 ? pkmn.type_1 == filterByType1 : true
+  const type2Match =
+    filterByType2.length > 0 ? pkmn.type_2 == filterByType2 : true
+
+  return (nameIncludes || dexNumIncludes) && type1Match && type2Match
+}
 
 export const PokemonListContainer = (props: Props) => {
 
@@ -16,9 +33,22 @@ export const PokemonListContainer = (props: Props) => {
     })
     ))
 
-  const [filterByName, setFilterByName] = useState('')
+  const [filterByTextInput, setFilterByTextInput] = useState('')
+  const [filterByType1, setFilterByType1] = useState({
+    type: '',
+    displayName: 'Any'
+  })
+  const [filterByType2, setFilterByType2] = useState({
+    type: '',
+    displayName: 'Any'
+  })
 
-  const filteredPokemonData = pokemonDataState.filter(pkmn => pkmn.name.includes(filterByName))
+  const filteredPokemonData = pokemonDataState.filter(pkmn =>
+    doesPokemonFitFilters(pkmn, filterByTextInput, filterByType1.type, filterByType2.type))
+
+  const numCaught = 10; // placeholder
+  const numTotal = filteredPokemonData.length
+  const percentCaught = Math.round(numCaught/numTotal*100)
 
   return (
     <div>
@@ -34,14 +64,27 @@ export const PokemonListContainer = (props: Props) => {
           id="pokemon-list-filter"
           type="text"
           placeholder="Enter name or PokeDex Number..."
-          onChange={event => setFilterByName(event.target.value)}
+          onChange={event => setFilterByTextInput(event.target.value)}
         />
+
+        <PokemonTypeDropdown {...{
+          className: 'type1',
+          labelName: "Type 1",
+          selectedType: filterByType1,
+          setSelectedType: setFilterByType1
+        }} />
+        <PokemonTypeDropdown {...{
+          className: 'type2',
+          labelName: "Type 2",
+          selectedType: filterByType2,
+          setSelectedType: setFilterByType2
+        }} />
       </div>
 
-      <p>You have caught <strong>X</strong> out of <strong>X</strong>, or <strong>~X%</strong></p>
+      <p>You have caught <strong>{numCaught}</strong> out of <strong>{numTotal}</strong>, or <strong>~{percentCaught}%</strong></p>
 
       {filteredPokemonData.map(pkmnData =>
-        <PokemonInfoCard {...pkmnData}
+        <PokemonInfoCard key={pkmnData.dex_number}{...pkmnData}
         />
       )}
 
