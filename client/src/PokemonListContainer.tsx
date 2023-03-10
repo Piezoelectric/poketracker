@@ -23,15 +23,20 @@ const doesPokemonFitFilters = (
 
 export const PokemonListContainer = (props: Props) => {
 
-  // Caught/uncaught should be managed in this component,
-  // same for search and filtering
-
   const [pokemonDataState, setPokemonDataState] = useState(
     pokemonData.map(pkmn => ({
       caught: false,
       ...pkmn
     })
     ))
+
+  const togglePokemonCaughtState = (dex_number: number) => {
+    const pkmnIndex = pokemonDataState.findIndex(pkmn => pkmn.dex_number == dex_number)
+    const pkmn = pokemonDataState[pkmnIndex]
+    const pokemonDataNewState = pokemonDataState
+    pokemonDataNewState[pkmnIndex].caught = !pkmn.caught
+    setPokemonDataState([...pokemonDataNewState])
+  }
 
   const [filterByTextInput, setFilterByTextInput] = useState('')
   const [filterByType1, setFilterByType1] = useState({
@@ -46,9 +51,9 @@ export const PokemonListContainer = (props: Props) => {
   const filteredPokemonData = pokemonDataState.filter(pkmn =>
     doesPokemonFitFilters(pkmn, filterByTextInput, filterByType1.type, filterByType2.type))
 
-  const numCaught = 10; // placeholder
+  const numCaught = filteredPokemonData.filter(pkmn => pkmn.caught).length
   const numTotal = filteredPokemonData.length
-  const percentCaught = Math.round(numCaught/numTotal*100)
+  const percentCaught = Math.round(numCaught / numTotal * 100)
 
   return (
     <div>
@@ -84,7 +89,9 @@ export const PokemonListContainer = (props: Props) => {
       <p>You have caught <strong>{numCaught}</strong> out of <strong>{numTotal}</strong>, or <strong>~{percentCaught}%</strong></p>
 
       {filteredPokemonData.map(pkmnData =>
-        <PokemonInfoCard key={pkmnData.dex_number}{...pkmnData}
+        <PokemonInfoCard key={pkmnData.dex_number}
+          toggleCaught={togglePokemonCaughtState}
+          {...pkmnData}
         />
       )}
 
