@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { PokemonInfoCard } from "./PokemonInfoCard";
 import { pokemonData } from "./data/pokemon";
 import { PokemonTypeDropdown } from "./PokemonTypeDropdown";
@@ -23,18 +23,29 @@ const doesPokemonFitFilters = (
 
 export const PokemonListContainer = (props: Props) => {
 
+  // Load caught/uncaught data from storage
+  const existingData = JSON.parse(window.localStorage.getItem("POKETRACKER_APP_STATE") || '[]')
+
   const [pokemonDataState, setPokemonDataState] = useState(
-    pokemonData.map(pkmn => ({
-      caught: false,
-      ...pkmn
-    })
-    ))
+    existingData.length > 0 ?
+      existingData :
+      pokemonData.map(pkmn => ({
+        caught: false,
+        ...pkmn
+      })
+      ))
+
+  // Persist caught/uncaught to storage
+  useEffect(() => {
+    window.localStorage.setItem("POKETRACKER_APP_STATE", JSON.stringify(pokemonDataState))
+  }, [pokemonDataState])
 
   const togglePokemonCaughtState = (dex_number: number) => {
-    const pkmnIndex = pokemonDataState.findIndex(pkmn => pkmn.dex_number == dex_number)
-    const pkmn = pokemonDataState[pkmnIndex]
+    const pkmnIndex = pokemonDataState.findIndex(
+      (pkmn: any) => pkmn.dex_number == dex_number)
+    const pkmnCaught = pokemonDataState[pkmnIndex].caught
     const pokemonDataNewState = pokemonDataState
-    pokemonDataNewState[pkmnIndex].caught = !pkmn.caught
+    pokemonDataNewState[pkmnIndex].caught = !pkmnCaught
     setPokemonDataState([...pokemonDataNewState])
   }
 
