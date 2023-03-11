@@ -21,7 +21,7 @@ export const PokemonInfoCard = (props: PokemonDataProps) => {
         <div className='w-full'><img className='mx-auto' alt={name} src={image_url}/></div>
         <div>
           <div className={type1Icon} title={type_1}></div>
-          <div className={type2Icon} title={type_2}></div>
+          <div className={type2Icon} title={type_2 || ''}></div>
         </div>
       </div>
     </div>
