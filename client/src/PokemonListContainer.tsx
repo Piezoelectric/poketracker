@@ -106,13 +106,16 @@ export const PokemonListContainer = (props: Props) => {
 
       <p>You have caught <strong>{numCaught}</strong> out of <strong>{numTotal}</strong>, or <strong>~{percentCaught || 0}%</strong></p>
 
-      {filteredPokemonData.map((pkmnData: PokemonDataProps) =>
-        <PokemonInfoCard key={pkmnData.dex_number}
-          {...pkmnData}
-          toggleCaught={togglePokemonCaughtState}
-        />
-      )}
-
+      <div className="container">
+        <div className="grid grid-cols-3">
+          {filteredPokemonData.map((pkmnData: PokemonDataProps) =>
+            <PokemonInfoCard key={pkmnData.dex_number}
+              {...pkmnData}
+              toggleCaught={togglePokemonCaughtState}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 };

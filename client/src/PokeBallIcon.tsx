@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function PokeBallIcon() {
+export default function PokeBallIcon(topHalf?:string) {
   return (
     <svg
       version="1.1"
@@ -18,7 +18,7 @@ export default function PokeBallIcon() {
         d="M24 12.5C24 18.85 18.85 24 12.5 24c-4.92 0-9.11-3.09-10.75-7.42l8.57-3.29c.31.9 1.17 1.54 2.18 1.54 1.28 0 2.33-1.05 2.33-2.33 0-.31-.061-.6-.17-.88l8.55-3.3c.51 1.3.79 2.7.79 4.18z"
       ></path>
       <path
-        fill="gray"
+        fill={topHalf || "gray"}
         stroke="#000"
         strokeWidth="2"
         strokeMiterlimit="10"
