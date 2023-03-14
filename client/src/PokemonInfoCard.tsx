@@ -1,6 +1,11 @@
 import React from "react";
+import { PokemonData } from "./data/pokemon";
 import PokeBallIcon from "./PokeBallIcon";
-import { PokemonDataProps } from "./PokemonListContainer";
+
+type PokemonDataProps = PokemonData & {
+  caught: boolean,
+  toggleCaught: (arg0: number) => void,
+}
 
 export const PokemonInfoCard = (props: PokemonDataProps) => {
   const { name, dex_number, type_1, type_2, image_url, caught, toggleCaught } = props;

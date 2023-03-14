@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { PokemonInfoCard } from "./PokemonInfoCard";
-import { PokemonData, pokemonData } from "./data/pokemon";
+// import { PokemonData, pokemonData } from "./data/pokemon";
+import { PokemonData } from "./data/pokemon";
 import { PokemonTypeDropdown } from "./PokemonTypeDropdown";
+import { pokemonTypesForDisplay } from "./data/pokemonTypes";
 
 type Props = {};
 
-export type PokemonDataProps = PokemonData & {
-  caught: boolean,
-  toggleCaught: (arg0: number) => void,
-}
+type CatchData = Record<number, boolean>
+// dex_number, true/false for caught
 
 const doesPokemonFitFilters = (
-  pkmn: any,
+  pkmn: PokemonData,
   filterByTextInput: string,
   filterByType1: string,
   filterByType2: string) => {
@@ -28,46 +28,78 @@ const doesPokemonFitFilters = (
 
 export const PokemonListContainer = (props: Props) => {
 
-  // Load caught/uncaught data from storage
+  const [pokemonCaughtState, setPokemonCaughtState] = useState<CatchData>({})
+
+  const togglePokemonCaughtState = (dex_number: number) => {
+    const pkmnCaught = pokemonCaughtState[dex_number]
+    const pokemonDataNewState = pokemonCaughtState
+    pokemonDataNewState[dex_number] = !pkmnCaught
+    setPokemonCaughtState({ ...pokemonDataNewState })
+  }
+
+  // Load caught/uncaught data from storage, if it exists
   const existingData = JSON.parse(window.localStorage.getItem("POKETRACKER_APP_STATE") || '[]')
 
-  const [pokemonDataState, setPokemonDataState] = useState(
-    existingData.length > 0 ?
-      existingData :
-      pokemonData.map(pkmn => ({
-        caught: false,
-        ...pkmn
-      })
-      ))
+  // Load pokemon data (name, number, etc... excluding catch data)
+  const [pkmnData, setPkmnData] = useState<PokemonData[]>([])
+  const [loadedPkmnFromApi, setLoadedPkmnFromApi] = useState(false)
+  const [apiError, setApiError] = useState('')
+
+  // Load pokemonData from API
+  useEffect(() => {
+    fetch("http://localhost:3001/pokemon") // TODO: move URL to .env file or something
+      .then(response =>
+        response.json()
+      )
+      .then((result) => {
+        // console.debug('result', result)
+        setLoadedPkmnFromApi(true)
+        setPkmnData(result)
+
+        // If existingData is empty (i.e. no previous data),
+        // create a new pokemonCaughtState from scratch
+        if (existingData.length == 0) {
+          const blankCatchData: CatchData = {}
+          result.forEach((pkmn: PokemonData) => {
+            blankCatchData[pkmn.dex_number] = false
+          })
+          setPokemonCaughtState(blankCatchData)
+        } else {
+          // If new pokemon have been added or deleted,
+          // modify existing data accordingly
+          // (We assume that each pokemon's national dex number will stay fixed)
+          const mergedCatchData: CatchData = {}
+          result.forEach((pkmn: PokemonData) => { // Take only pokemon that exist
+            if (existingData[pkmn.dex_number]) {
+              mergedCatchData[pkmn.dex_number] = existingData[pkmn.dex_number]
+            } else {
+              // A new pokemon was added to the list -- assume we have not caught it
+              mergedCatchData[pkmn.dex_number] = false
+            }
+          })
+          setPokemonCaughtState(mergedCatchData)
+        }
+      },
+        (error) => {
+          setLoadedPkmnFromApi(true)
+          setApiError(error.message)
+        })
+  }, [])
 
   // Persist caught/uncaught to storage
   useEffect(() => {
-    window.localStorage.setItem("POKETRACKER_APP_STATE", JSON.stringify(pokemonDataState))
-  }, [pokemonDataState])
-
-  const togglePokemonCaughtState = (dex_number: number) => {
-    const pkmnIndex = pokemonDataState.findIndex(
-      (pkmn: any) => pkmn.dex_number == dex_number)
-    const pkmnCaught = pokemonDataState[pkmnIndex].caught
-    const pokemonDataNewState = pokemonDataState
-    pokemonDataNewState[pkmnIndex].caught = !pkmnCaught
-    setPokemonDataState([...pokemonDataNewState])
-  }
+    window.localStorage.setItem("POKETRACKER_APP_STATE", JSON.stringify(pokemonCaughtState))
+  }, [pokemonCaughtState])
 
   const [filterByTextInput, setFilterByTextInput] = useState('')
-  const [filterByType1, setFilterByType1] = useState({
-    type: '',
-    displayName: 'Any'
-  })
-  const [filterByType2, setFilterByType2] = useState({
-    type: '',
-    displayName: 'Any'
-  })
+  const [filterByType1, setFilterByType1] = useState(pokemonTypesForDisplay[0])
+  // Defaults to typeless, displayed as "Any"
+  const [filterByType2, setFilterByType2] = useState(pokemonTypesForDisplay[0])
 
-  const filteredPokemonData = pokemonDataState.filter((pkmn: PokemonDataProps) =>
+  const filteredPokemonData = pkmnData.filter((pkmn: PokemonData) =>
     doesPokemonFitFilters(pkmn, filterByTextInput, filterByType1.type, filterByType2.type))
 
-  const numCaught = filteredPokemonData.filter((pkmn: PokemonDataProps) => pkmn.caught).length
+  const numCaught = filteredPokemonData.filter((pkmn: PokemonData) => pokemonCaughtState[pkmn.dex_number]).length
   const numTotal = filteredPokemonData.length
   const percentCaught = Math.round(numCaught / numTotal * 100)
 
@@ -104,18 +136,27 @@ export const PokemonListContainer = (props: Props) => {
         }} />
       </div>
 
-      <p>You have caught <strong>{numCaught}</strong> out of <strong>{numTotal}</strong>, or <strong>~{percentCaught || 0}%</strong></p>
+      {loadedPkmnFromApi ?
+        apiError ?
+          <div>{apiError}</div>
+          :
+          <div>
+            <p>You have caught <strong>{numCaught}</strong> out of <strong>{numTotal}</strong>, or <strong>~{percentCaught || 0}%</strong></p>
 
-      <div className="container">
-        <div className="grid grid-cols-3">
-          {filteredPokemonData.map((pkmnData: PokemonDataProps) =>
-            <PokemonInfoCard key={pkmnData.dex_number}
-              {...pkmnData}
-              toggleCaught={togglePokemonCaughtState}
-            />
-          )}
-        </div>
-      </div>
+            <div className="container">
+              <div className="grid grid-cols-3">
+                {filteredPokemonData.map((pkmn: PokemonData) =>
+                  <PokemonInfoCard key={pkmn.dex_number}
+                    {...pkmn}
+                    toggleCaught={togglePokemonCaughtState}
+                    caught={pokemonCaughtState[pkmn.dex_number]}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        :
+        <div>Loading data...</div>}
     </div>
   );
 };
