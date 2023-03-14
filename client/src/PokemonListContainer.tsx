@@ -19,9 +19,9 @@ const doesPokemonFitFilters = (
   const nameIncludes = pkmn.name.includes(filterByTextInput)
   const dexNumIncludes = pkmn.dex_number.toString().includes(filterByTextInput)
   const type1Match =
-    filterByType1.length > 0 ? pkmn.type_1 == filterByType1 : true
+    filterByType1.length > 0 ? pkmn.type_1 === filterByType1 : true
   const type2Match =
-    filterByType2.length > 0 ? pkmn.type_2 == filterByType2 : true
+    filterByType2.length > 0 ? pkmn.type_2 === filterByType2 : true
 
   return (nameIncludes || dexNumIncludes) && type1Match && type2Match
 }
@@ -54,11 +54,12 @@ export const PokemonListContainer = (props: Props) => {
       .then((result) => {
         // console.debug('result', result)
         setLoadedPkmnFromApi(true)
-        setPkmnData(result)
+        setPkmnData(result.sort((a:PokemonData, b:PokemonData) => a.dex_number > b.dex_number))
+        // Data from API isn't guaranteed to be in dex order, e.g. ghouldengo
 
         // If existingData is empty (i.e. no previous data),
         // create a new pokemonCaughtState from scratch
-        if (existingData.length == 0) {
+        if (existingData.length === 0) {
           const blankCatchData: CatchData = {}
           result.forEach((pkmn: PokemonData) => {
             blankCatchData[pkmn.dex_number] = false
