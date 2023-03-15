@@ -1,12 +1,16 @@
 import express from "express";
 import { db } from "./prisma/db";
 import cors from "cors";
+import jwt from "jsonwebtoken";
 
 import { Prisma, PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 const app = express();
 const port = 3001;
+
+const jwtSecret = process.env.ACCESS_TOKEN_SECRET
+const expiresIn = process.env.TOKEN_EXP_IN_SECONDS
 
 app.use(
   cors({
@@ -124,6 +128,42 @@ app.delete('/pokemon/:dexNumber', async (req, res) => {
     res.json({
       deletedPkmn
     })
+  } catch (e) {
+    handleRequestError(req, res, e)
+  }
+}) 
+
+// Login: username + password. Return token.
+// Obviously this is horribly insecure and a real authe/authz system would have
+// password hashing, salting, oauth, passwordless auth (see below) ... 
+// but owing to time constraints I'm not going to implement those.
+// https://www.prisma.io/blog/backend-prisma-typescript-orm-with-postgresql-auth-mngp1ps7kip4
+
+app.post('/login', async (req, res) => {
+  const { authorization } = req.headers
+  const decodedAuth = Buffer.from(authorization.split(" ")[1], 'base64').toString()
+  const [ email, password ] = decodedAuth.split(":")
+  try {
+    const user = await prisma.user.findFirst({
+      where: {
+        AND: [
+          { email },
+          { password}
+        ]
+      }
+    })
+    if (user && email && password) {
+      const token = jwt.sign(req.body, jwtSecret, {
+        expiresIn
+      })
+      res.json({
+        token
+      })
+    } else {
+      res.status(400).json({
+        error: "Invalid email or password"
+      })
+    }
   } catch (e) {
     handleRequestError(req, res, e)
   }
