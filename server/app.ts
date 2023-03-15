@@ -10,7 +10,7 @@ const app = express();
 const port = 3001;
 
 const jwtSecret = process.env.ACCESS_TOKEN_SECRET
-const expiresIn = process.env.TOKEN_EXP_IN_SECONDS
+const expiresIn = Number(process.env.TOKEN_EXP_IN_SECONDS)
 
 app.use(
   cors({
@@ -26,17 +26,7 @@ app.listen(port, () => {
   console.log(`PokeTracker server listening on port ${port}`);
 });
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
-
-/*
-  Create [admin]: pokemon [bulk pokemon?]
-  Read: single pokemon, bulk pokemon
-    Client should use the "read bulk pokemon" endpoint
-  Update [admin]: pokemon [bulk pokemon?]
-  Delete [admin]: pokemon [bulk pokemon?]
-*/
+// TODO: split this off into utils, routing file, etc.
 
 const handleRequestError = (req, res, e) => {
   let errorMsg = e?.message
@@ -53,8 +43,29 @@ const handleRequestError = (req, res, e) => {
   })
 }
 
+const authenticateJwt = (req, res, onSuccess) => {
+  const { authorization } = req.headers
+  if (authorization && authorization.length > 0) {
+    const bearerToken = authorization.split(" ")[1]
+    jwt.verify(bearerToken, jwtSecret, (err: any, user: any) => {
+      if (err) {
+        res.status(403).json({
+          message: "token error"
+        })
+      } else {
+        req.user = user
+        onSuccess(req, res)
+      }
+    })
+  } else {
+    res.status(403).json({
+      message: "unauthorized"
+    })
+  }
+}
+
 // Create
-app.post('/pokemon', async (req, res) => {
+const handleCreate = async (req, res) => {
   const { name, dex_number, type_1, type_2, image_url } = req.body
   try {
     const newPokemon = await prisma.pokemon.create({
@@ -70,6 +81,10 @@ app.post('/pokemon', async (req, res) => {
   } catch (e) {
     handleRequestError(req, res, e)
   }
+}
+
+app.post('/pokemon', async (req, res) => {
+  authenticateJwt(req, res, handleCreate)
 })
 
 // Read 
@@ -96,12 +111,12 @@ app.get('/pokemon/:dexNumber', async (req, res) => {
 })
 
 // Update
-app.put('/pokemon', async (req, res) => {
-  const { name, dex_number, type_1, type_2, image_url } = req.body
-  // For simplicity we assume dex_number stays fixed and can be used as lookup.
-  // In the real world it's possible a human could mis-enter a dex number, 
-  // but here we'll assume otherwise.
+const handleUpdate = async (req, res) => {
   try {
+    const { name, dex_number, type_1, type_2, image_url } = req.body
+    // For simplicity we assume dex_number stays fixed and can be used as lookup.
+    // In the real world it's possible a human could mis-enter a dex number, 
+    // but here we'll assume otherwise.
     const updatedPokemon = await prisma.pokemon.update({
       where: { dex_number },
       data: {
@@ -116,12 +131,15 @@ app.put('/pokemon', async (req, res) => {
   } catch (e) {
     handleRequestError(req, res, e)
   }
+}
+
+app.put('/pokemon', async (req, res) => {
+  authenticateJwt(req, res, handleUpdate)
 })
 
-// Delete
-app.delete('/pokemon/:dexNumber', async (req, res) => {
-  const { dexNumber: dex_number } = req.params
+const handleDelete = async (req, res) => {
   try {
+    const { dexNumber: dex_number } = req.params
     const deletedPkmn = await prisma.pokemon.delete({
       where: { dex_number: Number(dex_number) }
     })
@@ -131,7 +149,12 @@ app.delete('/pokemon/:dexNumber', async (req, res) => {
   } catch (e) {
     handleRequestError(req, res, e)
   }
-}) 
+}
+
+// Delete
+app.delete('/pokemon/:dexNumber', async (req, res) => {
+  authenticateJwt(req, res, handleDelete)
+})
 
 // Login: username + password. Return token.
 // Obviously this is horribly insecure and a real authe/authz system would have
@@ -142,13 +165,13 @@ app.delete('/pokemon/:dexNumber', async (req, res) => {
 app.post('/login', async (req, res) => {
   const { authorization } = req.headers
   const decodedAuth = Buffer.from(authorization.split(" ")[1], 'base64').toString()
-  const [ email, password ] = decodedAuth.split(":")
+  const [email, password] = decodedAuth.split(":")
   try {
     const user = await prisma.user.findFirst({
       where: {
         AND: [
           { email },
-          { password}
+          { password }
         ]
       }
     })
